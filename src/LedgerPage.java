@@ -5,7 +5,6 @@ import java.awt.*;
 import java.sql.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 // LedgerPage.java: all accounts have their own T-Account Ledger cards in a scrollable list.
@@ -32,11 +31,12 @@ public class LedgerPage extends JPanel {
         heading.setFont(new Font("SansSerif", Font.BOLD, 21));
         heading.setForeground(CORNSILK);
 
-        JButton backButton = createLightButton("←  Back to Dashboard");
+        JButton backButton = createLightButton("🏠");
+        backButton.setPreferredSize(new Dimension(50, 39));
         backButton.addActionListener(e -> onBackClick.run());
 
-        header.add(heading, BorderLayout.WEST);
-        header.add(backButton, BorderLayout.EAST);
+        header.add(backButton, BorderLayout.WEST);
+        header.add(heading, BorderLayout.EAST);
 
         // Main scrollable area for all T-Account cards
         tAccountsContainer = new JPanel();

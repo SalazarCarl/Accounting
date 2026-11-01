@@ -29,11 +29,12 @@ public class ViewJournalPage extends JPanel {
         heading.setFont(new Font("SansSerif", Font.BOLD, 21));
         heading.setForeground(CORNSILK);
 
-        JButton backButton = createLightButton("←  Back to Dashboard");
+        JButton backButton = createLightButton("🏠");
+        backButton.setPreferredSize(new Dimension(50, 39));
         backButton.addActionListener(e -> onBackClick.run());
 
-        header.add(heading, BorderLayout.WEST);
-        header.add(backButton, BorderLayout.EAST);
+        header.add(backButton, BorderLayout.WEST);
+        header.add(heading, BorderLayout.EAST);
 
         // Main Area
         JPanel body = new JPanel(new BorderLayout());

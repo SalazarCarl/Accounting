@@ -37,8 +37,8 @@ public class JournalEntryPage extends JPanel {
         projectTitleLabel.setFont(new Font("SansSerif", Font.BOLD, 21));
         projectTitleLabel.setForeground(CORNSILK);
 
-        JButton backButton = createLightButton("←  Back to Dashboard");
-        backButton.setPreferredSize(new Dimension(170, 39));
+        JButton backButton = createLightButton("🏠");
+        backButton.setPreferredSize(new Dimension(50, 39));
         backButton.addActionListener(e -> onBackClick.run());
 
         JButton viewButton = new JButton("View Full Journal");
@@ -63,7 +63,7 @@ public class JournalEntryPage extends JPanel {
         ledgerButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         ledgerButton.addActionListener(e -> onViewLedger.run());
 
-        header.add(projectTitleLabel, BorderLayout.WEST);
+        header.add(backButton, BorderLayout.WEST);
 
         JPanel headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         headerRight.setOpaque(false);
