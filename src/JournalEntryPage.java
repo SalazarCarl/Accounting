@@ -24,7 +24,7 @@ public class JournalEntryPage extends JPanel {
     private DefaultTableModel previewModel;
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("MMM dd yyyy");
 
-    public JournalEntryPage(Runnable onBackClick, Runnable onViewJournal) {
+    public JournalEntryPage(Runnable onBackClick, Runnable onViewJournal, Runnable onViewLedger) {
         setLayout(new BorderLayout());
         setBackground(CORNSILK);
 
@@ -52,11 +52,23 @@ public class JournalEntryPage extends JPanel {
         viewButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         viewButton.addActionListener(e -> onViewJournal.run());
 
+        JButton ledgerButton = new JButton("View Ledger");
+        ledgerButton.setFont(new Font("SansSerif", Font.BOLD, 12));
+        ledgerButton.setBackground(HOVER_OLIVE);
+        ledgerButton.setForeground(Color.WHITE);
+        ledgerButton.setFocusPainted(false);
+        ledgerButton.setBorderPainted(false);
+        ledgerButton.setOpaque(true);
+        ledgerButton.setBorder(new EmptyBorder(10, 15, 10, 15));
+        ledgerButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        ledgerButton.addActionListener(e -> onViewLedger.run());
+
         header.add(projectTitleLabel, BorderLayout.WEST);
 
         JPanel headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         headerRight.setOpaque(false);
         headerRight.add(viewButton);
+        headerRight.add(ledgerButton);
         headerRight.add(backButton);
         header.add(headerRight, BorderLayout.EAST);
 
@@ -149,6 +161,10 @@ public class JournalEntryPage extends JPanel {
         amountField.setText("0.00");
         descField.setText("");
         loadPreviewEntries();
+    }
+
+    public String getCurrentProjectTitle() {
+        return currentProjectTitle;
     }
 
     public void loadExistingProject(String title) {

@@ -79,8 +79,14 @@ public class homepage extends JFrame {
             ViewJournalPage vjp = (ViewJournalPage) contentPanel.getComponent(2);
             vjp.loadLatestProject();
             showPage("viewjournal");
+        }, () -> {
+            LedgerPage lp = (LedgerPage) contentPanel.getComponent(3);
+            JournalEntryPage jep = (JournalEntryPage) contentPanel.getComponent(1);
+            lp.loadProject(jep.getCurrentProjectTitle());
+            showPage("ledger");
         }), "journal");
         contentPanel.add(new ViewJournalPage(() -> showPage("home")), "viewjournal");
+        contentPanel.add(new LedgerPage(() -> showPage("home")), "ledger");
     }
 
     private JPanel createHomePage() {
