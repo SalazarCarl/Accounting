@@ -5,28 +5,16 @@ import java.awt.*;
 import java.sql.*;
 import java.time.format.DateTimeFormatter;
 
-// LedgerPage.java: the T-Account (General Ledger).
-//
-// Layout matches the reference image:
-//   Title (account name) in the upper-left corner.
-//   Below it, one header row split in two halves:
-//     Date | Explanation | Debit      |      Date | Explanation | Credit
-//   Debit entries on the left, credit entries on the right.
-//
-// Each journal entry is split across both sides:
-//   - the debit account row goes on the left (DR = amount)
-//   - the credit account row goes on the right (CR = amount)
+// LedgerPage.java: per-account T-Account Ledger matching the reference image.
 public class LedgerPage extends JPanel {
 
     private static final Color CORNSILK = new Color(254, 250, 224);
     private static final Color DARK_OLIVE = new Color(96, 108, 56);
     private static final Color WARM_IVORY = new Color(255, 239, 205);
-    private static final Color HEADER_BG = new Color(80, 92, 48);
 
     private String currentProjectTitle;
-    private JTable table;
-    private JLabel accountTitle;
-    private DefaultTableModel model;
+    private JComboBox<String> accountSelector;
+    private JPanel tAccountsContainer;
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public LedgerPage(Runnable onBackClick) {
@@ -38,7 +26,7 @@ public class LedgerPage extends JPanel {
         header.setBackground(DARK_OLIVE);
         header.setBorder(new EmptyBorder(12, 26, 12, 26));
 
-        JLabel heading = new JLabel("Ledger");
+        JLabel heading = new JLabel("General Ledger (T-Accounts)");
         heading.setFont(new Font("SansSerif", Font.BOLD, 21));
         heading.setForeground(CORNSILK);
 
@@ -48,55 +36,30 @@ public class LedgerPage extends JPanel {
         header.add(heading, BorderLayout.WEST);
         header.add(backButton, BorderLayout.EAST);
 
-        // Main area
-        JPanel body = new JPanel(new BorderLayout());
+        // Main area with account selector toolbar
+        JPanel body = new JPanel(new BorderLayout(0, 15));
         body.setBackground(CORNSILK);
-        body.setBorder(new EmptyBorder(30, 40, 30, 40));
+        body.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        RoundedPanel sheetPanel = new RoundedPanel(22, WARM_IVORY);
-        sheetPanel.setLayout(new BorderLayout());
-        sheetPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        toolbar.setOpaque(false);
+        JLabel selectLabel = new JLabel("Select Account:");
+        selectLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        selectLabel.setForeground(DARK_OLIVE);
 
-        // Title card (upper-left corner, like "Cash" in the image)
-        JPanel titleCard = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        titleCard.setOpaque(false);
-        titleCard.setBorder(new EmptyBorder(0, 0, 12, 0));
-        currentProjectTitle = "Untitled";
-        accountTitle = new JLabel(currentProjectTitle);
-        accountTitle.setFont(new Font("SansSerif", Font.BOLD, 26));
-        accountTitle.setForeground(DARK_OLIVE);
-        titleCard.add(accountTitle);
-        sheetPanel.add(titleCard, BorderLayout.NORTH);
+        accountSelector = new JComboBox<>();
+        accountSelector.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        accountSelector.setPreferredSize(new Dimension(220, 32));
+        accountSelector.addActionListener(e -> loadSelectedAccountLedger());
 
-        // T-Account table: Date | Explanation | Debit | Date | Explanation | Credit
-        String[] columns = {"Date", "Explanation", "Debit", "Date", "Explanation", "Credit"};
-        model = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-        table = new JTable(model);
-        table.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        table.setRowHeight(24);
-        table.setGridColor(new Color(205, 200, 180));
-        table.getTableHeader().setForeground(Color.WHITE);
-        table.getTableHeader().setOpaque(true);
-        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
-        table.getTableHeader().setForeground(Color.WHITE);
-        table.getTableHeader().setOpaque(true);
+        toolbar.add(selectLabel);
+        toolbar.add(accountSelector);
+        body.add(toolbar, BorderLayout.NORTH);
 
-        // Column widths: left half wider, right half narrower
-        table.getColumnModel().getColumn(0).setPreferredWidth(90);
-        table.getColumnModel().getColumn(1).setPreferredWidth(180);
-        table.getColumnModel().getColumn(2).setPreferredWidth(80);
-        table.getColumnModel().getColumn(3).setPreferredWidth(90);
-        table.getColumnModel().getColumn(4).setPreferredWidth(180);
-        table.getColumnModel().getColumn(5).setPreferredWidth(80);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.getViewport().setOpaque(true);
-        sheetPanel.add(scrollPane, BorderLayout.CENTER);
-
-        body.add(sheetPanel, BorderLayout.CENTER);
+        // Container for T-account cards
+        tAccountsContainer = new JPanel(new BorderLayout());
+        tAccountsContainer.setOpaque(false);
+        body.add(tAccountsContainer, BorderLayout.CENTER);
 
         add(header, BorderLayout.NORTH);
         add(body, BorderLayout.CENTER);
@@ -120,38 +83,135 @@ public class LedgerPage extends JPanel {
 
     public void loadProject(String title) {
         this.currentProjectTitle = title;
-        if (accountTitle != null) accountTitle.setText(title);
-        model.setRowCount(0);
+        refreshAccountList();
+    }
 
+    private void refreshAccountList() {
+        accountSelector.removeActionListener(accountSelector.getActionListeners()[0]);
+        accountSelector.removeAllItems();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT DISTINCT debit_account FROM journal_entries j JOIN users u ON j.user_id = u.user_id "
+                     + "WHERE j.title = ? AND u.username = ? "
+                     + "UNION "
+                     + "SELECT DISTINCT credit_account FROM journal_entries j JOIN users u ON j.user_id = u.user_id "
+                     + "WHERE j.title = ? AND u.username = ? "
+                     + "ORDER BY 1")) {
+            if (conn == null) return;
+            ps.setString(1, currentProjectTitle);
+            ps.setString(2, LoginApp.currentUser);
+            ps.setString(3, currentProjectTitle);
+            ps.setString(4, LoginApp.currentUser);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String acc = rs.getString(1);
+                    if (acc != null && !acc.isEmpty()) {
+                        accountSelector.addItem(acc);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Could not load account list: " + e.getMessage());
+        }
+
+        accountSelector.addActionListener(e -> loadSelectedAccountLedger());
+        if (accountSelector.getItemCount() > 0) {
+            accountSelector.setSelectedIndex(0);
+        } else {
+            tAccountsContainer.removeAll();
+            tAccountsContainer.revalidate();
+            tAccountsContainer.repaint();
+        }
+    }
+
+    private void loadSelectedAccountLedger() {
+        String accountName = (String) accountSelector.getSelectedItem();
+        if (accountName == null) return;
+
+        tAccountsContainer.removeAll();
+
+        RoundedPanel sheetPanel = new RoundedPanel(22, WARM_IVORY);
+        sheetPanel.setLayout(new BorderLayout());
+        sheetPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        // Upper-left corner account title
+        JPanel titleCard = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        titleCard.setOpaque(false);
+        titleCard.setBorder(new EmptyBorder(0, 0, 12, 0));
+        JLabel accountTitle = new JLabel(accountName);
+        accountTitle.setFont(new Font("SansSerif", Font.BOLD, 26));
+        accountTitle.setForeground(DARK_OLIVE);
+        titleCard.add(accountTitle);
+        sheetPanel.add(titleCard, BorderLayout.NORTH);
+
+        // T-Account table: Date | Explanation | Debit | Date | Explanation | Credit
+        String[] columns = {"Date", "Explanation", "Debit", "Date", "Explanation", "Credit"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        JTable table = new JTable(model);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        table.setRowHeight(24);
+        table.setGridColor(new Color(205, 200, 180));
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setOpaque(true);
+
+        table.getColumnModel().getColumn(0).setPreferredWidth(90);
+        table.getColumnModel().getColumn(1).setPreferredWidth(180);
+        table.getColumnModel().getColumn(2).setPreferredWidth(80);
+        table.getColumnModel().getColumn(3).setPreferredWidth(90);
+        table.getColumnModel().getColumn(4).setPreferredWidth(180);
+        table.getColumnModel().getColumn(5).setPreferredWidth(80);
+
+        // Fetch entries where this account is either debit or credit
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(
                      "SELECT entry_date, debit_account, credit_account, description, amount "
                      + "FROM journal_entries j JOIN users u ON j.user_id = u.user_id "
-                     + "WHERE j.title = ? AND u.username = ? "
+                     + "WHERE j.title = ? AND u.username = ? AND (debit_account = ? OR credit_account = ?) "
                      + "ORDER BY entry_date ASC, entry_id ASC")) {
-            if (conn == null) return;
-            ps.setString(1, title);
-            ps.setString(2, LoginApp.currentUser);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    java.sql.Date sqlDate = rs.getDate("entry_date");
-                    String formattedDate = sqlDate != null ? sqlDate.toLocalDate().format(DISPLAY_FORMAT) : "";
-                    String debitAcc = rs.getString("debit_account");
-                    String creditAcc = rs.getString("credit_account");
-                    String description = rs.getString("description");
-                    if (description == null || description.isEmpty()) description = "Journal Entry";
-                    if (!description.startsWith("#")) description = "#" + description;
-                    String amtStr = String.format("%.2f", rs.getDouble("amount"));
+            if (conn != null) {
+                ps.setString(1, currentProjectTitle);
+                ps.setString(2, LoginApp.currentUser);
+                ps.setString(3, accountName);
+                ps.setString(4, accountName);
 
-                    // Debit side: Date | Explanation | Debit
-                    model.addRow(new Object[]{formattedDate, debitAcc, amtStr, "", "", ""});
-                    // Credit side: Date | Explanation | Credit
-                    model.addRow(new Object[]{"", "", "", formattedDate, creditAcc, amtStr});
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        java.sql.Date sqlDate = rs.getDate("entry_date");
+                        String formattedDate = sqlDate != null ? sqlDate.toLocalDate().format(DISPLAY_FORMAT) : "";
+                        String debitAcc = rs.getString("debit_account");
+                        String creditAcc = rs.getString("credit_account");
+                        String desc = rs.getString("description");
+                        if (desc == null || desc.isEmpty()) desc = "Journal Entry";
+                        double amount = rs.getDouble("amount");
+                        String amtStr = String.format("%.2f", amount);
+
+                        if (accountName.equalsIgnoreCase(debitAcc)) {
+                            // Debit entry: put on left side, description as explanation
+                            model.addRow(new Object[]{formattedDate, desc, amtStr, "", "", ""});
+                        } else if (accountName.equalsIgnoreCase(creditAcc)) {
+                            // Credit entry: put on right side, description as explanation
+                            model.addRow(new Object[]{"", "", "", formattedDate, desc, amtStr});
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Could not load ledger: " + e.getMessage());
+            System.err.println("Could not load account ledger: " + e.getMessage());
         }
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.getViewport().setOpaque(true);
+        sheetPanel.add(scrollPane, BorderLayout.CENTER);
+
+        tAccountsContainer.add(sheetPanel, BorderLayout.CENTER);
+        tAccountsContainer.revalidate();
+        tAccountsContainer.repaint();
     }
 
     private JButton createLightButton(String text) {
