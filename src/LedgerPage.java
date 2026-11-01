@@ -18,7 +18,7 @@ public class LedgerPage extends JPanel {
     private JPanel tAccountsContainer;
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-    public LedgerPage(Runnable onBackClick) {
+    public LedgerPage(Runnable onBackClick, Runnable onBackToJournal) {
         setLayout(new BorderLayout());
         this.setBackground(CORNSILK);
 
@@ -27,15 +27,30 @@ public class LedgerPage extends JPanel {
         header.setBackground(DARK_OLIVE);
         header.setBorder(new EmptyBorder(12, 26, 12, 26));
 
-        JLabel heading = new JLabel("General Ledger (T-Accounts)");
-        heading.setFont(new Font("SansSerif", Font.BOLD, 21));
-        heading.setForeground(CORNSILK);
-
         JButton backButton = createLightButton("🏠");
         backButton.setPreferredSize(new Dimension(50, 39));
         backButton.addActionListener(e -> onBackClick.run());
 
-        header.add(backButton, BorderLayout.WEST);
+        JButton journalButton = new JButton("← Journal Entry");
+        journalButton.setFont(new Font("SansSerif", Font.BOLD, 12));
+        journalButton.setBackground(CORNSILK);
+        journalButton.setForeground(DARK_OLIVE);
+        journalButton.setFocusPainted(false);
+        journalButton.setBorderPainted(false);
+        journalButton.setOpaque(true);
+        journalButton.setBorder(new EmptyBorder(9, 12, 9, 12));
+        journalButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        journalButton.addActionListener(e -> onBackToJournal.run());
+
+        JPanel headerLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        headerLeft.setOpaque(false);
+        headerLeft.add(backButton);
+        headerLeft.add(journalButton);
+        header.add(headerLeft, BorderLayout.WEST);
+
+        JLabel heading = new JLabel("General Ledger (T-Accounts)");
+        heading.setFont(new Font("SansSerif", Font.BOLD, 21));
+        heading.setForeground(CORNSILK);
         header.add(heading, BorderLayout.EAST);
 
         // Main scrollable area for all T-Account cards

@@ -83,7 +83,7 @@ public class homepage extends JFrame {
             showPage("ledger");
         }), "journal");
         contentPanel.add(new ViewJournalPage(() -> showPage("home")), "viewjournal");
-        contentPanel.add(new LedgerPage(() -> showPage("home")), "ledger");
+        contentPanel.add(new LedgerPage(() -> showPage("home"), () -> showPage("journal")), "ledger");
     }
 
     private JPanel createHomePage() {
