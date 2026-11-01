@@ -3,8 +3,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.sql.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 public class homepage extends JFrame {
 
@@ -12,8 +10,6 @@ public class homepage extends JFrame {
     private static final Color DARK_OLIVE = new Color(96, 108, 56);
     private static final Color WARM_IVORY = new Color(255, 239, 205);
     private static final Color HOVER_OLIVE = new Color(115, 130, 72);
-    private static final Color TEXT_COLOR = new Color(55, 62, 37);
-    private static final Color MUTED_TEXT = new Color(115, 116, 94);
 
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel contentPanel = new JPanel(cardLayout);
@@ -57,6 +53,7 @@ public class homepage extends JFrame {
         JLabel userLabel = new JLabel(username);
         userLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
         userLabel.setForeground(DARK_OLIVE);
+        userLabel.setBorder(new EmptyBorder(0, 8, 0, 0));
 
         profilePanel.add(photoLabel);
         profilePanel.add(userLabel);
