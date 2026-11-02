@@ -131,7 +131,7 @@ public class homepage extends JFrame {
             vjp.loadLatestProject();
             showPage("viewjournal");
         }, () -> {
-            LedgerPage lp = (LedgerPage) contentPanel.getComponent(4);
+            LedgerPage lp = (LedgerPage) contentPanel.getComponent(3);
             JournalEntryPage jep = (JournalEntryPage) contentPanel.getComponent(1);
             lp.loadProject(jep.getCurrentProjectTitle());
             showPage("ledger");
