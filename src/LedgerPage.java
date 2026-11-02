@@ -161,6 +161,8 @@ public class LedgerPage extends JPanel {
         // Collect debit rows and credit rows separately so we can pack them together without blank rows
         List<Object[]> debitRows = new ArrayList<>();
         List<Object[]> creditRows = new ArrayList<>();
+        double totalDebit = 0.0;
+        double totalCredit = 0.0;
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(
@@ -187,9 +189,11 @@ public class LedgerPage extends JPanel {
 
                         if (accountName.equalsIgnoreCase(debitAcc)) {
                             debitRows.add(new Object[]{formattedDate, desc, amtStr});
+                            totalDebit += amount;
                         }
                         if (accountName.equalsIgnoreCase(creditAcc)) {
                             creditRows.add(new Object[]{formattedDate, desc, amtStr});
+                            totalCredit += amount;
                         }
                     }
                 }
@@ -226,6 +230,24 @@ public class LedgerPage extends JPanel {
             model.addRow(new Object[]{dDate, dDesc, dAmt, cDate, cDesc, cAmt});
         }
 
+        // Add TOTAL row
+        String totalDebitStr = String.format("%.2f", totalDebit);
+        String totalCreditStr = String.format("%.2f", totalCredit);
+        model.addRow(new Object[]{"", "TOTAL", totalDebitStr, "", "TOTAL", totalCreditStr});
+
+        // Add BALANCE row if totals are not equal
+        double diff = Math.abs(totalDebit - totalCredit);
+        if (diff > 0.001) {
+            String diffStr = String.format("%.2f", diff);
+            if (totalDebit > totalCredit) {
+                model.addRow(new Object[]{"", "BALANCE", diffStr, "", "", ""});
+            } else {
+                model.addRow(new Object[]{"", "", "", "", "BALANCE", diffStr});
+            }
+        }
+
+        int totalDisplayedRows = maxRows + 1 + (diff > 0.001 ? 1 : 0);
+
         JTable table = new JTable(model);
         table.setFont(new Font("SansSerif", Font.PLAIN, 13));
         table.setRowHeight(24);
@@ -244,7 +266,7 @@ public class LedgerPage extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.getViewport().setOpaque(true);
-        scrollPane.setPreferredSize(new Dimension(0, Math.min(180, 45 + (maxRows * 24))));
+        scrollPane.setPreferredSize(new Dimension(0, Math.min(220, 45 + (totalDisplayedRows * 24))));
         sheetPanel.add(scrollPane, BorderLayout.CENTER);
 
         return sheetPanel;
