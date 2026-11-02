@@ -263,11 +263,9 @@ public class LedgerPage extends JPanel {
         table.getColumnModel().getColumn(4).setPreferredWidth(170);
         table.getColumnModel().getColumn(5).setPreferredWidth(75);
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.getViewport().setOpaque(true);
-        scrollPane.setPreferredSize(new Dimension(0, Math.min(220, 45 + (totalDisplayedRows * 24))));
-        scrollPane.setWheelScrollingEnabled(false);
-        sheetPanel.add(scrollPane, BorderLayout.CENTER);
+        // Add the table directly to the card so the single outer scrollpane
+        // handles all scrolling smoothly, regardless of where the cursor is.
+        sheetPanel.add(table, BorderLayout.CENTER);
 
         return sheetPanel;
     }
