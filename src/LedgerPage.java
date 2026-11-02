@@ -142,7 +142,6 @@ public class LedgerPage extends JPanel {
         RoundedPanel sheetPanel = new RoundedPanel(22, WARM_IVORY);
         sheetPanel.setLayout(new BorderLayout());
         sheetPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        sheetPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 320));
 
         // Upper-left corner account title
         JPanel titleCard = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -263,9 +262,13 @@ public class LedgerPage extends JPanel {
         table.getColumnModel().getColumn(4).setPreferredWidth(170);
         table.getColumnModel().getColumn(5).setPreferredWidth(75);
 
-        // Add the table directly to the card so the single outer scrollpane
-        // handles all scrolling smoothly, regardless of where the cursor is.
+        // Add table with header to the card
+        sheetPanel.add(table.getTableHeader(), BorderLayout.NORTH);
         sheetPanel.add(table, BorderLayout.CENTER);
+
+        // Set preferred height so all rows and header are fully visible without inner scrollbars
+        int totalRows = totalDisplayedRows + 1; // +1 for header
+        sheetPanel.setPreferredSize(new Dimension(0, 40 + (totalRows * 24)));
 
         return sheetPanel;
     }
