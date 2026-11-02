@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 CREATE TABLE IF NOT EXISTS journal_entries (
     entry_id INT AUTO_INCREMENT PRIMARY KEY,
     entry_date DATE NOT NULL,
+    title VARCHAR(100) NOT NULL,
     debit_account VARCHAR(100) NOT NULL,
     credit_account VARCHAR(100) NOT NULL,
     description TEXT,
@@ -31,6 +32,10 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     user_id INT,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+-- Backfill for databases created before the title column existed.
+-- MySQL 8.0+ supports ADD COLUMN IF NOT EXISTS, so this is safe to re-run.
+ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS title VARCHAR(100) NOT NULL DEFAULT '';
 
 -- 4. 12-Columns Worksheet Data Table
 CREATE TABLE IF NOT EXISTS worksheet_data (

@@ -34,6 +34,8 @@ mysql -u root -p < schema.sql
 
 This creates the `accutrack_db` database and the `users`, `accounts`, `journal_entries`, and `worksheet_data` tables.
 
+> **If you already have an `accutrack_db` from an older version of the repo**, re-run the command above. The schema now includes an `ALTER TABLE ... ADD COLUMN IF NOT EXISTS title ...` statement that backfills the missing `title` column on `journal_entries`, so re-running is safe.
+
 ## 3. Install Java (if not already)
 
 Requires **Java 17+**. Check:
@@ -72,6 +74,7 @@ The login window will open. The default admin account is `Administrator`.
 | `Connection failed: Communications link failure` / `Cannot connect to MySQL server` | MySQL service is not running — start it (step 1) |
 | `ClassNotFound: com.mysql.cj.jdbc.Driver` | JDBC jar missing or not on classpath — make sure `lib/mysql-connector-j-*.jar` is present and the `-cp` includes `lib/*` |
 | `java -version` works but `javac` does not | Java JDK (not just JRE) is not on PATH — install the JDK, not the JRE |
+| `Database Error: Unknown column 'title' in 'field list'` | Old `accutrack_db` is missing the `title` column on `journal_entries` — re-run `mysql -u root -p < schema.sql` (step 2); the `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` backfills it |
 
 ## Notes
 
