@@ -266,6 +266,7 @@ public class LedgerPage extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.getViewport().setOpaque(true);
         scrollPane.setPreferredSize(new Dimension(0, Math.min(220, 45 + (totalDisplayedRows * 24))));
+        scrollPane.setWheelScrollingEnabled(false);
         sheetPanel.add(scrollPane, BorderLayout.CENTER);
 
         return sheetPanel;
