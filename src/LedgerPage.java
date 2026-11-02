@@ -143,7 +143,12 @@ public class LedgerPage extends JPanel {
         sheetPanel.setLayout(new BorderLayout());
         sheetPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Upper-left corner account title
+        // Upper-left corner account title + table header share one NORTH panel
+        // (BorderLayout only shows the last component added to a region, so the
+        //  title and header must be grouped together or the header hides the name)
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.setOpaque(false);
+
         JPanel titleCard = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         titleCard.setOpaque(false);
         titleCard.setBorder(new EmptyBorder(0, 0, 12, 0));
@@ -151,7 +156,7 @@ public class LedgerPage extends JPanel {
         accountTitle.setFont(new Font("SansSerif", Font.BOLD, 22));
         accountTitle.setForeground(DARK_OLIVE);
         titleCard.add(accountTitle);
-        sheetPanel.add(titleCard, BorderLayout.NORTH);
+        northPanel.add(titleCard, BorderLayout.NORTH);
 
         // T-Account table: Date | Explanation | Debit | Date | Explanation | Credit
         String[] columns = {"Date", "Explanation", "Debit", "Date", "Explanation", "Credit"};
@@ -263,12 +268,14 @@ public class LedgerPage extends JPanel {
         table.getColumnModel().getColumn(5).setPreferredWidth(75);
 
         // Add table with header to the card
-        sheetPanel.add(table.getTableHeader(), BorderLayout.NORTH);
+        northPanel.add(table.getTableHeader(), BorderLayout.CENTER);
+        sheetPanel.add(northPanel, BorderLayout.NORTH);
         sheetPanel.add(table, BorderLayout.CENTER);
 
         // Set preferred height so all rows and header are fully visible without inner scrollbars
+        // northPanel holds the account title (~30px) + the table header (~26px)
         int totalRows = totalDisplayedRows + 1; // +1 for header
-        sheetPanel.setPreferredSize(new Dimension(0, 40 + (totalRows * 24)));
+        sheetPanel.setPreferredSize(new Dimension(0, 56 + (totalRows * 24)));
 
         return sheetPanel;
     }
