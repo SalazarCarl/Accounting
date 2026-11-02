@@ -82,7 +82,7 @@ public class homepage extends JFrame {
             lp.loadProject(jep.getCurrentProjectTitle());
             showPage("ledger");
         }), "journal");
-        contentPanel.add(new ViewJournalPage(() -> showPage("home")), "viewjournal");
+        contentPanel.add(new ViewJournalPage(() -> showPage("home"), () -> showPage("journal")), "viewjournal");
         contentPanel.add(new LedgerPage(() -> showPage("home"), () -> showPage("journal")), "ledger");
     }
 
