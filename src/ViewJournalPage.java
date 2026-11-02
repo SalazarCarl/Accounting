@@ -69,6 +69,7 @@ public class ViewJournalPage extends JPanel {
         table.setFont(new Font("SansSerif", Font.PLAIN, 13));
         table.setRowHeight(24);
         table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
+        table.getTableHeader().setBackground(DARK_OLIVE);
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setOpaque(true);
 

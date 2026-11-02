@@ -231,6 +231,7 @@ public class LedgerPage extends JPanel {
         table.setRowHeight(24);
         table.setGridColor(new Color(205, 200, 180));
         table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
+        table.getTableHeader().setBackground(DARK_OLIVE);
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setOpaque(true);
 
