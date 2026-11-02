@@ -63,13 +63,16 @@ public class JournalEntryPage extends JPanel {
         ledgerButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         ledgerButton.addActionListener(e -> onViewLedger.run());
 
-        header.add(backButton, BorderLayout.WEST);
+        JPanel headerLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        headerLeft.setOpaque(false);
+        headerLeft.add(backButton);
+        headerLeft.add(projectTitleLabel);
+        header.add(headerLeft, BorderLayout.WEST);
 
         JPanel headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         headerRight.setOpaque(false);
         headerRight.add(viewButton);
         headerRight.add(ledgerButton);
-        headerRight.add(backButton);
         header.add(headerRight, BorderLayout.EAST);
 
         // Main Body Layout (Clean Form on Left / Top, Compact Guide Table on Right)
@@ -235,7 +238,7 @@ public class JournalEntryPage extends JPanel {
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement("SELECT entry_date, description, amount FROM journal_entries j JOIN users u ON j.user_id = u.user_id WHERE j.title = ? AND u.username = ? ORDER BY entry_id ASC")) {
-            if (conn == null) return;
+
             pstmt.setString(1, currentProjectTitle);
             pstmt.setString(2, LoginApp.currentUser);
             try (ResultSet rs = pstmt.executeQuery()) {

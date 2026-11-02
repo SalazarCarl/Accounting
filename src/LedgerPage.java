@@ -102,7 +102,6 @@ public class LedgerPage extends JPanel {
                      + "SELECT DISTINCT credit_account FROM journal_entries j JOIN users u ON j.user_id = u.user_id "
                      + "WHERE j.title = ? AND u.username = ? "
                      + "ORDER BY 1")) {
-            if (conn == null) return;
             ps.setString(1, currentProjectTitle);
             ps.setString(2, LoginApp.currentUser);
             ps.setString(3, currentProjectTitle);

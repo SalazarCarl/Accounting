@@ -109,7 +109,7 @@ public class ViewJournalPage extends JPanel {
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT entry_date, debit_account, credit_account, description, amount FROM journal_entries j JOIN users u ON j.user_id = u.user_id WHERE j.title = ? AND u.username = ? ORDER BY entry_date ASC, entry_id ASC")) {
-            if (conn == null) return;
+
             ps.setString(1, title);
             ps.setString(2, LoginApp.currentUser);
             try (ResultSet rs = ps.executeQuery()) {

@@ -17,7 +17,7 @@ public class LoginScreen extends Theme.Screen {
         form.setOpaque(false);
         Theme.addRow(form, Theme.label("Welcome back", Theme.serif(Font.PLAIN, 30), Theme.OLIVE_DEEP, SwingConstants.CENTER), 0);
         Theme.addRow(form, Theme.label("Please enter your credentials to log in.", Theme.sans(Font.PLAIN, 14), Theme.OLIVE, SwingConstants.CENTER), 8);
-        Theme.addRow(form, Theme.fieldLabel("Username\nUsername only"), 26);
+        Theme.addRow(form, Theme.fieldLabel("Username"), 26);
         Theme.addRow(form, user, 6);
         Theme.addRow(form, Theme.fieldLabel("Password"), 16);
         Theme.addRow(form, pass, 6);
